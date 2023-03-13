@@ -15,7 +15,7 @@ import {getStyles} from './utils/cellStylesUtils';
 
 const XLSX = require('@pengchen/xlsx');
 
-const ROW_HPX = 25;
+const ROW_HPX = 25, ROW_HPT = 25;
 /**
  * 导出
  * @param fileName
@@ -97,28 +97,28 @@ const formatToSheet = (
     bodyCellStyle,
     useRender,
     onTxBodyRow,
-  } : {
-      columns: ColumnType[],
-      dataSource: DataType[],
-      showHeader: boolean,
-      raw: boolean,
-      cellStyle?: CellStyleType,
-      headerCellStyle?: CellStyleType,
-      bodyCellStyle?: CellStyleType,
-      useRender?: boolean,
-      onTxBodyRow?: (row: DefaultValueType, rowIndex: number) => { style: CellStyleType },
-    }
+  }: {
+    columns: ColumnType[],
+    dataSource: DataType[],
+    showHeader: boolean,
+    raw: boolean,
+    cellStyle?: CellStyleType,
+    headerCellStyle?: CellStyleType,
+    bodyCellStyle?: CellStyleType,
+    useRender?: boolean,
+    onTxBodyRow?: (row: DefaultValueType, rowIndex: number) => { style: CellStyleType },
+  }
 ) => {
   const sheet: SheetType = {};
   const $cols: { wpx: number }[] = [];
-  const $rows: { hpx: number }[] = [];
+  const $rows: { hpx: number, hpt: number }[] = [];
   const $merges: MergesArrType[] = [];
   //
   const {columns: flatColumns, level} = flattenColumns({columns});
   let headerLevel = level;
   if (showHeader) {
     for (let i = 0; i < headerLevel; i++) {
-      $rows.push({hpx: ROW_HPX});
+      $rows.push({hpx: ROW_HPX, hpt: ROW_HPT});
     }
     // 表头信息
     const headerData = getHeaderData({columns, headerLevel, cellStyle, headerCellStyle});
@@ -134,7 +134,7 @@ const formatToSheet = (
     const xAxis = XLSX.utils.encode_col(colIndex);
     dataSource.forEach((data: DataType, rowIndex: number) => {
       if (colIndex === 0) {
-        $rows.push({hpx: ROW_HPX});
+        $rows.push({hpx: ROW_HPX, hpt: ROW_HPT});
       }
       let value = getPathValue(data, key);
       if (col.render) {
@@ -187,7 +187,7 @@ const getHeaderData = ({
   headerLevel,
   cellStyle,
   headerCellStyle
-} : {
+}: {
   columns: ColumnType[],
   headerLevel: number,
   cellStyle?: CellStyleType,
@@ -234,7 +234,7 @@ const getMerge = ({
   colIndex,
   rowIndex,
   headerLevel
-} : {
+}: {
   renderResult: {
     props: { colSpan: number, rowSpan: number }
   },
