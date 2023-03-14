@@ -142,7 +142,7 @@ const formatToSheet = (
     const xAxis = XLSX.utils.encode_col(colIndex);
     dataSource.forEach((data: DataType, rowIndex: number) => {
       if (colIndex === 0) {
-        $rows.push({hpx: data.ROW_HPX || ROW_HPX, hpt: data.data || ROW_HPT});
+        $rows.push({hpx: data.ROW_HPX || ROW_HPX, hpt: data.ROW_HPT || ROW_HPT});
       }
       let value = getPathValue(data, key);
       if (col.render) {
