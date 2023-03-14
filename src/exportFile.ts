@@ -164,8 +164,8 @@ const formatToSheet = (
         txBodyCellStyle = result?.style || {};
       }
       const keyIndex = `${xAxis}${headerLevel + rowIndex + 1}`;
-      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${headerLevel + rowIndex}`] : null;
-      sheet[keyIndex] = Object.assign({}, csm || {
+      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${headerLevel + rowIndex}`] : {};
+      sheet[keyIndex] = Object.assign({
         t: (raw && typeof value === 'number') ? 'n' : 's',
         v: value ? value : '',
         s: getStyles({
@@ -175,7 +175,7 @@ const formatToSheet = (
           ...txBodyRowStyle,
           ...txBodyCellStyle,
         }),
-      });
+      }, csm);
     });
   });
   const xe = XLSX.utils.encode_col(Math.max(flatColumns.length - 1, 0));
@@ -218,9 +218,9 @@ const getHeaderData = ({
     rowsArr.forEach((cols: HeaderCellType, colIndex: number) => {
       const xAxis = XLSX.utils.encode_col(colIndex);
       const style = cols?.txHeaderCellStyle || {};
-      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${rowIndex}`] : null;
+      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${rowIndex}`] : {};
       // https://github.com/SheetJS/sheetjs#cell-object
-      sheet[`${xAxis}${rowIndex + 1}`] = Object.assign({}, csm || {
+      sheet[`${xAxis}${rowIndex + 1}`] = Object.assign({
         t: 's',
         v: cols.title,
         s: getStyles({
@@ -230,7 +230,7 @@ const getHeaderData = ({
           ...headerCellStyle,
           ...style,
         }),
-      });
+      }, csm);
       if (cols.merges && !mergesWeakMap.get(cols.merges)) {
         mergesWeakMap.set(cols.merges, true); // Microsoft Excel 如果传了相同的merges信息，文件会损坏，做个去重
         merges.push(cols.merges);
