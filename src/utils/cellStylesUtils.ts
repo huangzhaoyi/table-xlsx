@@ -1,5 +1,5 @@
-
 export const getStyles = ({
+  fontSize = 12,
   fontName = 'Calibri',
   fontColorRgb = '333333',
   fontBold = false,
@@ -11,7 +11,8 @@ export const getStyles = ({
   alignmentWrapText = false, // true false
   alignmentReadingOrder = 2, // for right-to-left
   alignmentTextRotation = 0, // Number from 0 to 180 or 255
-} : {
+}: {
+  fontSize?: number,
   fontBold?: boolean,
   fontName?: string,
   fontColorRgb?: string,
@@ -26,12 +27,13 @@ export const getStyles = ({
 }) => {
   return {
     fill: {
-      fgColor: { rgb: formatRgb(fillFgColorRgb) }
+      fgColor: {rgb: formatRgb(fillFgColorRgb)}
     },
     font: {
       name: fontName,
-      color: { rgb: formatRgb(fontColorRgb) },
+      color: {rgb: formatRgb(fontColorRgb)},
       bold: fontBold,
+      sz: fontSize
     },
     border: getDefaultBorder({style: borderStyle, colorRgb: formatRgb(borderColorRgb)}),
     numFmt: undefined,
@@ -49,12 +51,12 @@ const getDefaultBorder = (
   {
     style = 'thin',
     colorRgb = 'd1d3d8',
-  } : {
+  }: {
     style?: string,
     colorRgb?: string
   }
 ) => {
-  const border =  {
+  const border = {
     top: {
       style, // thin medium thick dotted hair dashed mediumDashed dashDot mediumDashDot dashDotDot mediumDashDotDot slantDashDot
       color: {
@@ -67,24 +69,24 @@ const getDefaultBorder = (
     },
     left: {
       style: style,
-      color: { rgb: colorRgb }
+      color: {rgb: colorRgb}
     },
     bottom: {
       style: style,
-      color: { rgb: colorRgb }
+      color: {rgb: colorRgb}
     },
     right: {
       style: style,
-      color: { rgb: colorRgb }
+      color: {rgb: colorRgb}
     },
     diagonal: {
       style: style,
-      color: { rgb: colorRgb }
+      color: {rgb: colorRgb}
     }
   };
   return border;
 };
 
-const formatRgb = (hex:string) => {
+const formatRgb = (hex: string) => {
   return hex.replace('#', '');
 };

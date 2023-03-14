@@ -1,4 +1,5 @@
 import {
+  CellStyleModel,
   CellStyleType,
   ColumnType,
   DataType,
@@ -28,6 +29,8 @@ const ROW_HPX = 25, ROW_HPT = 25;
  * @param headerCellStyle 单元格样式
  * @param bodyCellStyle 单元格样式
  * @param useRender 是否使用render返回的值
+ * @param onTxBodyRow
+ * @param cellStyleModels
  */
 export const exportFile = (
   {
@@ -42,6 +45,7 @@ export const exportFile = (
     bodyCellStyle = {},
     useRender = true,
     onTxBodyRow,
+    cellStyleModels = {}
   }: {
     fileName?: string,
     sheetNames?: (string | number)[],
@@ -54,6 +58,7 @@ export const exportFile = (
     bodyCellStyle?: CellStyleType,
     useRender?: boolean,
     onTxBodyRow?: (row: DefaultValueType, rowIndex: number) => { style: CellStyleType },
+    cellStyleModels?: Record<string, CellStyleModel>
   }
 ): {
   SheetNames: (string | number)[],
@@ -73,12 +78,13 @@ export const exportFile = (
       headerCellStyle,
       bodyCellStyle,
       onTxBodyRow,
+      cellStyleModels: cellStyleModels
     });
     Sheets[sheetName] = sheet;
   });
   const wb = {
     SheetNames: sheetNames,
-    Sheets: Sheets,
+    Sheets: Sheets
   };
   XLSX.writeFile(wb, fileName);
   return wb;
@@ -97,6 +103,7 @@ const formatToSheet = (
     bodyCellStyle,
     useRender,
     onTxBodyRow,
+    cellStyleModels
   }: {
     columns: ColumnType[],
     dataSource: DataType[],
@@ -107,6 +114,7 @@ const formatToSheet = (
     bodyCellStyle?: CellStyleType,
     useRender?: boolean,
     onTxBodyRow?: (row: DefaultValueType, rowIndex: number) => { style: CellStyleType },
+    cellStyleModels?: Record<string, CellStyleModel>
   }
 ) => {
   const sheet: SheetType = {};
@@ -121,7 +129,7 @@ const formatToSheet = (
       $rows.push({hpx: ROW_HPX, hpt: ROW_HPT});
     }
     // 表头信息
-    const headerData = getHeaderData({columns, headerLevel, cellStyle, headerCellStyle});
+    const headerData = getHeaderData({columns, headerLevel, cellStyle, headerCellStyle, cellStyleModels});
     Object.assign(sheet, headerData.sheet);
     $merges.push(...headerData.merges);
   } else {
@@ -134,7 +142,7 @@ const formatToSheet = (
     const xAxis = XLSX.utils.encode_col(colIndex);
     dataSource.forEach((data: DataType, rowIndex: number) => {
       if (colIndex === 0) {
-        $rows.push({hpx: ROW_HPX, hpt: ROW_HPT});
+        $rows.push({hpx: data.ROW_HPX || ROW_HPX, hpt: data.data || ROW_HPT});
       }
       let value = getPathValue(data, key);
       if (col.render) {
@@ -155,7 +163,9 @@ const formatToSheet = (
         const result = col.onTxBodyCell(data, rowIndex);
         txBodyCellStyle = result?.style || {};
       }
-      sheet[`${xAxis}${headerLevel + rowIndex + 1}`] = {
+      const keyIndex = `${xAxis}${headerLevel + rowIndex + 1}`;
+      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${headerLevel + rowIndex + 1}`] : null;
+      sheet[keyIndex] = csm || {
         t: (raw && typeof value === 'number') ? 'n' : 's',
         v: value ? value : '',
         s: getStyles({
@@ -170,10 +180,14 @@ const formatToSheet = (
   });
   const xe = XLSX.utils.encode_col(Math.max(flatColumns.length - 1, 0));
   const ye = headerLevel + dataSource.length;
+  // const $sourceRows = sourceSheets['!rows'];
+  // const realRows = Object.assign($rows, $sourceRows);
+  // console.warn('realRows:', realRows);
   sheet['!ref'] = `A1:${xe}${ye}`;
   sheet['!cols'] = $cols;
   sheet['!rows'] = $rows;
   sheet['!merges'] = $merges;
+  // console.warn('结果sheet:', sheet);
   return {
     sheet
   };
@@ -186,12 +200,14 @@ const getHeaderData = ({
   columns,
   headerLevel,
   cellStyle,
-  headerCellStyle
+  headerCellStyle,
+  cellStyleModels
 }: {
   columns: ColumnType[],
   headerLevel: number,
   cellStyle?: CellStyleType,
   headerCellStyle?: CellStyleType,
+  cellStyleModels?: Record<string, CellStyleModel>
 }) => {
   const sheet: SheetType = {};
   const merges: { s: { c: number, r: number }, e: { c: number, r: number } }[] = [];
@@ -202,8 +218,9 @@ const getHeaderData = ({
     rowsArr.forEach((cols: HeaderCellType, colIndex: number) => {
       const xAxis = XLSX.utils.encode_col(colIndex);
       const style = cols?.txHeaderCellStyle || {};
+      const csm = cellStyleModels ? cellStyleModels[`${colIndex}${ rowIndex + 1}`] : null;
       // https://github.com/SheetJS/sheetjs#cell-object
-      sheet[`${xAxis}${rowIndex + 1}`] = {
+      sheet[`${xAxis}${rowIndex + 1}`] = csm || {
         t: 's',
         v: cols.title,
         s: getStyles({

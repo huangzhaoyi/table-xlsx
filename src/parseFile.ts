@@ -39,7 +39,7 @@ export const parseFile = ({file}: { file: File }) => new Promise((resolve, rejec
   reader.onerror = (e) => {
     reject(e);
   };
-  if(rABS) reader.readAsBinaryString(file); else reader.readAsArrayBuffer(file);
+  if (rABS) reader.readAsBinaryString(file); else reader.readAsArrayBuffer(file);
 });
 
 /**
